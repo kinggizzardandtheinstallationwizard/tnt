@@ -79,6 +79,9 @@ threadmain(int argc, char *argv[])
 		if(ncol <= 0)
 			goto Usage;
 		break;
+	case 'e':
+        evilflag = TRUE;
+        break;
 	case 'f':
 		fontnames[0] = ARGF();
 		if(fontnames[0] == nil)
@@ -97,9 +100,12 @@ threadmain(int argc, char *argv[])
 		if(loadfile == nil)
 			goto Usage;
 		break;
+	case 'n':
+	   lineflag = TRUE;
+	   break;
 	default:
 	Usage:
-		fprint(2, "usage: acme [-aib] [-c ncol] [-f font] [-F fixedfont] [-l loadfile | file...]\n");
+		fprint(2, "usage: acme [-aibne] [-c ncol] [-f font] [-F fixedfont] [-l loadfile | file...]\n");
 		exits("usage");
 	}ARGEND
 

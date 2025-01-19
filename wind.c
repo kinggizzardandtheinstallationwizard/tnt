@@ -32,6 +32,8 @@ wininit(Window *w, Window *clone, Rectangle r)
 		incref(w);
 	w->ctlfid = ~0;
 	w->utflastqid = -1;
+	w->showlines = lineflag;
+	w->evil = evilflag;
 	r1 = r;
 	r1.max.y = r1.min.y + font->height;
 	w->tagtop = r;
@@ -87,6 +89,7 @@ wininit(Window *w, Window *clone, Rectangle r)
 		textsetselect(&w->body, clone->body.q0, clone->body.q1);
 		winsettag(w);
 	}
+
 }
 
 int
