@@ -243,8 +243,10 @@ struct Window
 	uchar	isscratch;
 	uchar	filemenu;
 	uchar	dirty;
+	uchar   evil;
 	uchar	indent[NINDENT];
 	uchar	showdel;
+	uchar   showlines;
 	int		id;
 	Range	addr;
 	Range	limit;

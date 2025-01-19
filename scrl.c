@@ -105,7 +105,7 @@ scrsleep(uint dt)
 			return;
 		}
 }
-/*
+
 void
 textscroll(Text *t, int but)
 {
@@ -126,77 +126,29 @@ textscroll(Text *t, int but)
 			my = s.max.y;
 		if(but == 2){
 			y = my;
-			p0 = (vlong)t->file->nc*(y-s.min.y)/h;
-			if(p0 >= t->q1)
-				p0 = textbacknl(t, p0, 2);
+			if(y > s.max.y-2)
+				y = s.max.y-2;
+			if(t->file->nc > 1024*1024)
+				p0 = ((t->file->nc>>10)*(y-s.min.y)/h)<<10;
+			else
+				p0 = t->file->nc*(y-s.min.y)/h;
 			if(oldp0 != p0)
 				textsetorigin(t, p0, FALSE);
 			oldp0 = p0;
 			readmouse(mousectl);
 			continue;
 		}
-		if(but == 1)
-			p0 = textbacknl(t, t->org, (my-s.min.y)/t->font->height);
-		else
-			p0 = t->org+frcharofpt(t, Pt(s.max.x, my));
+		if(but == 1 || but == 4){
+			y = max(1, (my-s.min.y)/t->font->height);
+			p0 = textbacknl(t, t->org, y);
+		}else{
+			y = max(my, s.min.y+t->font->height);
+			p0 = t->org+frcharofpt(t, Pt(s.max.x, y));
+		}
 		if(oldp0 != p0)
 			textsetorigin(t, p0, TRUE);
 		oldp0 = p0;
 		//debounce
-		if(first){
-			flushimage(display, 1);
-			sleep(200);
-			nbrecv(mousectl->c, &mousectl->Mouse);
-			first = FALSE;
-		}
-		scrsleep(80);
-	}while(mouse->buttons & (1<<(but-1)));
-	while(mouse->buttons)
-		readmouse(mousectl);
-} */
-
-void
-textscroll(Text *w, int but)
-{
-	uint p0, oldp0;
-	Rectangle s;
-	int y, my, h, first;
-
-	s = insetrect(w->scrollr, 1);
-	h = s.max.y-s.min.y;
-	oldp0 = ~0;
-	first = TRUE;
-	do{
-		my = mouse->xy.y;
-		if(my < s.min.y)
-			my = s.min.y;
-		if(my >= s.max.y)
-			my = s.max.y;
-		if(but == 2){
-			y = my;
-			if(y > s.max.y-2)
-				y = s.max.y-2;
-			if(w->file->nc > 1024*1024)
-				p0 = ((w->file->nc>>10)*(y-s.min.y)/h)<<10;
-			else
-				p0 = w->file->nc*(y-s.min.y)/h;
-			if(oldp0 != p0)
-				textsetorigin(w, p0, FALSE);
-			oldp0 = p0;
-			readmouse(mousectl);
-			continue;
-		}
-		if(but == 1 || but == 4){
-			y = max(1, (my-s.min.y)/w->font->height);
-			p0 = textbacknl(w, w->org, y);
-		}else{
-			y = max(my, s.min.y+w->font->height);
-			p0 = w->org+frcharofpt(w, Pt(s.max.x, y));
-		}
-		if(oldp0 != p0)
-			textsetorigin(w, p0, TRUE);
-		oldp0 = p0;
-		/* debounce */
 		if(first){
 			if(display->bufp > display->buf)
 				flushimage(display, 1);
@@ -206,8 +158,9 @@ textscroll(Text *w, int but)
 			nbrecv(mousectl->c, &mousectl->Mouse);
 			first = FALSE;
 		}
-		scrsleep(100);
+		scrsleep(80);
 	}while(mouse->buttons & (1<<(but-1)));
 	while(mouse->buttons)
 		readmouse(mousectl);
+
 }

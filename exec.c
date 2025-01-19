@@ -33,6 +33,7 @@ void	del(Text*, Text*, Text*, int, int, Rune*, int);
 void	delcol(Text*, Text*, Text*, int, int, Rune*, int);
 void	dump(Text*, Text*, Text*, int, int, Rune*, int);
 void	edit(Text*, Text*, Text*, int, int, Rune*, int);
+void	evil(Text*, Text*, Text*, int, int, Rune*, int);
 void	exit(Text*, Text*, Text*, int, int, Rune*, int);
 void	fontx(Text*, Text*, Text*, int, int, Rune*, int);
 void	get(Text*, Text*, Text*, int, int, Rune*, int);
@@ -40,6 +41,7 @@ void	id(Text*, Text*, Text*, int, int, Rune*, int);
 void	incl(Text*, Text*, Text*, int, int, Rune*, int);
 void	indent(Text*, Text*, Text*, int, int, Rune*, int);
 void	kill(Text*, Text*, Text*, int, int, Rune*, int);
+void    xline(Text*, Text*, Text*, int, int, Rune*, int); /* line() is taken by libdraw */
 void	local(Text*, Text*, Text*, int, int, Rune*, int);
 void	look(Text*, Text*, Text*, int, int, Rune*, int);
 void	newcol(Text*, Text*, Text*, int, int, Rune*, int);
@@ -68,6 +70,7 @@ Exectab exectab[] = {
 	{ L"Delete",	del,		FALSE,	TRUE,	XXX		},
 	{ L"Dump",	dump,	FALSE,	TRUE,	XXX		},
 	{ L"Edit",		edit,		FALSE,	XXX,		XXX		},
+	{ L"Evil",		evil,		FALSE,	XXX,		XXX		},
 	{ L"Exit",		exit,		FALSE,	XXX,		XXX		},
 	{ L"Font",		fontx,	FALSE,	XXX,		XXX		},
 	{ L"Get",		get,		FALSE,	TRUE,	XXX		},
@@ -75,6 +78,7 @@ Exectab exectab[] = {
 	{ L"Incl",		incl,		FALSE,	XXX,		XXX		},
 	{ L"Indent",	indent,		FALSE,	AUTOINDENT,		XXX		},
 	{ L"Kill",		kill,		FALSE,	XXX,		XXX		},
+	{ L"Line",      xline,  FALSE,  XXX,    XXX },
 	{ L"Load",		dump,	FALSE,	FALSE,	XXX		},
 	{ L"Local",		local,	FALSE,	XXX,		XXX		},
 	{ L"Look",		look,		FALSE,	XXX,		XXX		},
@@ -93,6 +97,30 @@ Exectab exectab[] = {
 	{ L"Zerox",	zeroxx,	FALSE,	XXX,		XXX		},
 	{ nil, 			nil,		0,		0,		0		},
 };
+
+void
+xline(Text *et, Text*, Text*, int, int, Rune*, int)
+{
+    Window *w;
+    if(et == nil || et->w == nil)
+        return;
+    
+    w = et->w;
+    w->showlines = !w->showlines;
+    winresize(w, w->r, FALSE, TRUE);
+}
+
+void
+evil(Text *et, Text*, Text*, int, int, Rune*, int)
+{
+    Window *w;
+    if(et == nil || et->w == nil)
+        return;
+    
+    w = et->w;
+    w->evil = !w->evil;
+    winresize(w, w->r, FALSE, TRUE);
+}
 
 Exectab*
 lookup(Rune *r, int n)

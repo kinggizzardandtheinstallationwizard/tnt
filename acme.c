@@ -521,15 +521,16 @@ mousethread(void *)
 			}
 			/* scroll buttons, wheels, etc. */
 			if(t->what==Body && w != nil && (m.buttons & (8|16))){
-				if(m.buttons & 8)
-					but = Kscrolloneup;
-				else
-					but = Kscrollonedown;
-				winlock(w, 'M');
-				t->eq0 = ~0;
-				texttype(t, but);
-				winunlock(w);
-				goto Continue;
+            winlock(w, 'M');
+            t->eq0 = ~0;
+            if(m.buttons & 8)
+                textscroll(t, 4);
+            else
+                textscroll(t, 5);
+            if(t->w->showlines)
+	           textredraw(t, t->r, t->font, t->b, Dx(t->all));
+            winunlock(w);
+            goto Continue;
 			}
 			if(ptinrect(m.xy, t->scrollr)){
 				if(but){
