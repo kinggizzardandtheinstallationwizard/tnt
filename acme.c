@@ -438,6 +438,7 @@ mousethread(void *)
 	Mouse m;
 	char *act;
 	enum { MResize, MMouse, MPlumb, MWarnings, NMALT };
+	enum { Shift = 5 };
 	static Alt alts[NMALT+1];
 
 	threadsetname("mousethread");
@@ -560,6 +561,7 @@ mousethread(void *)
 					wincommit(w, t);
 				else
 					textcommit(t, TRUE);
+				print("Got button %d\n", m.buttons);
 				if(m.buttons & 1){
 					textselect(t);
 					if(w)
@@ -573,9 +575,9 @@ mousethread(void *)
 				}else if(m.buttons & 2){
 					if(textselect2(t, &q0, &q1, &argt))
 						execute(t, q0, q1, FALSE, argt);
-				}else if(m.buttons & 4){
+				}else if(m.buttons & (4|(4<<Shift))){
 					if(textselect3(t, &q0, &q1))
-						look3(t, q0, q1, FALSE);
+						look3(t, q0, q1, FALSE, (m.buttons&(4<<Shift))!=0);
 				}
 				if(w)
 					winunlock(w);
@@ -681,7 +683,7 @@ waitthread(void *)
 					pids = p;
 				}
 			}else{
-				if(search(t, c->name, c->nname)){
+				if(search(t, c->name, c->nname, FALSE)){
 					textdelete(t, t->q0, t->q1, TRUE);
 					textsetselect(t, 0, 0);
 				}
