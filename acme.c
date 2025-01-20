@@ -561,7 +561,6 @@ mousethread(void *)
 					wincommit(w, t);
 				else
 					textcommit(t, TRUE);
-				print("Got button %d\n", m.buttons);
 				if(m.buttons & 1){
 					textselect(t);
 					if(w)
