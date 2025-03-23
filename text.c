@@ -812,6 +812,8 @@ texttype(Text *t, Rune r)
 			error("text.type");
 		cut(t, t, nil, TRUE, TRUE, nil, 0);
 		t->eq0 = ~0;
+		if(r == 0x08)
+			return;
 	}
 	textshow(t, t->q0, t->q0, 1);
 	switch(r){
