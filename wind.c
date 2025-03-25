@@ -89,7 +89,7 @@ wininit(Window *w, Window *clone, Rectangle r)
 		textsetselect(&w->body, clone->body.q0, clone->body.q1);
 		winsettag(w);
 	}
-
+	
 }
 
 int

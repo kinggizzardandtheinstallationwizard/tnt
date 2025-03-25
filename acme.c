@@ -15,7 +15,7 @@
 	#include "edit.h"
 
 void	mousethread(void*);
-void	keyboardthread(void*);
+void	keyboardtap(void*);
 void	waitthread(void*);
 void	xfidallocthread(void*);
 void	newwindowthread(void*);
@@ -30,6 +30,8 @@ int		mainpid;
 int		plumbsendfd;
 int		plumbeditfd;
 
+Channel	*kbdchan;	/* chan(char*); */
+
 enum{
 	NSnarf = 1000	/* less than 1024, I/O buffer size */
 };
@@ -42,6 +44,7 @@ Command *command;
 void	acmeerrorinit(void);
 void	readfile(Column*, char*);
 int	shutdown(void*, char*);
+Channel* initkbd(void);
 
 void
 derror(Display*, char *errorstr)
@@ -184,11 +187,11 @@ threadmain(int argc, char *argv[])
 		threadexitsall("mouse");
 	}
 	mouse = mousectl;
-	keyboardctl = initkeyboard(nil);
-	if(keyboardctl == nil){
-		fprint(2, "acme: can't initialize keyboard: %r\n");
-		threadexitsall("keyboard");
-	}
+	kbdchan = initkbd();
+	if(kbdchan == nil)
+		error("can't find keyboard");
+	opentap = chancreate(sizeof(Channel*), 0);
+	closetap = chancreate(sizeof(Channel*), 0);
 	mainpid = getpid();
 	plumbeditfd = plumbopen("edit", OREAD|OCEXEC);
 	if(plumbeditfd >= 0){
@@ -234,7 +237,7 @@ threadmain(int argc, char *argv[])
 	flushimage(display, 1);
 
 	acmeerrorinit();
-	threadcreate(keyboardthread, nil, STACK);
+	threadcreate(keyboardtap, nil, STACK);
 	threadcreate(mousethread, nil, STACK);
 	threadcreate(waitthread, nil, STACK);
 	threadcreate(xfidallocthread, nil, STACK);
@@ -367,64 +370,152 @@ plumbproc(void *)
 }
 
 void
-keyboardthread(void *)
+keyboardtap(void*)
 {
-	Rune r;
-	Timer *timer;
-	Text *t;
-	enum { KTimer, KKey, NKALT };
-	static Alt alts[NKALT+1];
+	Window *cur = nil;
+	Channel *c;
+	char *s, *t;
 
-	alts[KTimer].c = nil;
-	alts[KTimer].v = nil;
-	alts[KTimer].op = CHANNOP;
-	alts[KKey].c = keyboardctl->c;
-	alts[KKey].v = &r;
-	alts[KKey].op = CHANRCV;
-	alts[NKALT].op = CHANEND;
+	enum { Akbd, Aopen, Aclose, Awrite, NALT };
+	Alt alts[NALT+1] = {
+		[Akbd]	{.c = kbdchan, .v = &s, .op = CHANRCV},
+		[Aopen] {.c = opentap, .v = &c, .op = CHANRCV},
+		[Aclose]{.c = closetap, .v = &c, .op = CHANRCV},
+		[Awrite]{.c = nil, .v = &s, .op = CHANNOP},
+		[NALT]	{.op = CHANEND},
+	};
 
-	timer = nil;
-	typetext = nil;
-	threadsetname("keyboardthread");
+	threadsetname("keyboardtap");
+
 	for(;;){
 		switch(alt(alts)){
-		case KTimer:
-			timerstop(timer);
-			t = typetext;
-			if(t!=nil && t->what==Tag){
-				winlock(t->w, 'K');
-				wincommit(t->w, t);
-				winunlock(t->w);
-				flushimage(display, 1);
+		case Akbd:
+			if(*s == 'k' || *s == 'K'){
+				shiftdown = utfrune(s+1, Kshift) != nil;
+				print("shift\n");
 			}
-			alts[KTimer].c = nil;
-			alts[KTimer].op = CHANNOP;
+			if(totap == nil)
+				goto Bypass;
+			if(input != nil && input != cur){	/* context change */
+				char *z = smprint("z%d", input->id);
+				if(nbsendp(totap, z) != 1){
+					free(z);
+					goto Bypass;
+				}
+			}
+			cur = input;
+			if(nbsendp(totap, s) != 1)
+				goto Bypass;
 			break;
-		case KKey:
-		casekeyboard:
-			typetext = rowtype(&row, r, mouse->xy);
-			t = typetext;
-			if(t!=nil && t->col!=nil && !(r==Kdown || r==Kleft || r==Kright))	/* scrolling doesn't change activecol */
-				activecol = t->col;
-			if(t!=nil && t->w!=nil)
-				t->w->body.file->curtext = &t->w->body;
-			if(timer != nil)
-				timercancel(timer);
-			if(t!=nil && t->what==Tag) {
-				timer = timerstart(500);
-				alts[KTimer].c = timer->c;
-				alts[KTimer].op = CHANRCV;
-			}else{
-				timer = nil;
-				alts[KTimer].c = nil;
-				alts[KTimer].op = CHANNOP;
+		case Aopen:
+			if(c == fromtap){
+				alts[Awrite].c = c;
+				alts[Awrite].op = CHANRCV;
 			}
-			if(nbrecv(keyboardctl->c, &r) > 0)
-				goto casekeyboard;
-			flushimage(display, 1);
+			break;
+		case Aclose:
+			if(c == fromtap){
+				fromtap = nil;
+				alts[Awrite].c = nil;
+				alts[Awrite].op = CHANNOP;
+			}
+			if(c == totap)
+				totap = nil;
+			while(nbrecv(c, &t))
+				free(t);
+			chanfree(c);
+			break;
+		case Awrite:
+			if(input != cur){
+				free(s);
+				break;
+			}
+		Bypass:
+			cur = input;
+			if(cur == nil){
+				free(s);
+				break;
+			}
+			sendp(cur->ck, s);
 			break;
 		}
 	}
+}
+
+static void
+kbdproc(void *arg)
+{
+	Channel *c = arg;
+	char buf[1024], *p, *e;
+	int fd, cfd, kfd, n;
+
+	threadsetname("kbdproc");
+
+	if((fd = open("/dev/cons", OREAD)) < 0){
+		chanprint(c, "%r");
+		return;
+	}
+	if((cfd = open("/dev/consctl", OWRITE)) < 0){
+		chanprint(c, "%r");
+		return;
+	}
+	fprint(cfd, "rawon");
+
+	if(sendp(c, nil) <= 0)
+		return;
+
+	if((kfd = open("/dev/kbd", OREAD)) >= 0){
+		close(fd);
+
+		/* only serve a kbd file per window when we got one */
+		servekbd = 1;
+
+		/* read kbd state */
+		while((n = read(kfd, buf, sizeof(buf)-1)) > 0){
+			e = buf+n;
+			e[-1] = 0;
+			e[0] = 0;
+			for(p = buf; p < e; p += strlen(p)+1)
+				chanprint(c, "%s", p);
+		}
+	} else {
+		/* read single characters */
+		p = buf;
+		for(;;){
+			Rune r;
+
+			e = buf + sizeof(buf);
+			if((n = read(fd, p, e-p)) <= 0)
+				break;
+			e = p + n;
+			while(p < e && fullrune(p, e - p)){
+				p += chartorune(&r, p);
+				if(r)
+					chanprint(c, "c%C", r);
+			}
+			n = e - p;
+			memmove(buf, p, n);
+			p = buf + n;
+		}
+	}
+	// send(exitchan, nil);
+}
+
+Channel*
+initkbd(void)
+{
+	Channel *c;
+	char *e;
+
+	c = chancreate(sizeof(char*), 16);
+	procrfork(kbdproc, c, STACK, RFCFDG);
+	if(e = recvp(c)){
+		chanfree(c);
+		c = nil;
+		werrstr("%s", e);
+		free(e);
+	}
+	return c;
 }
 
 void
