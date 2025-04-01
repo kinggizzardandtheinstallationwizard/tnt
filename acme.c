@@ -15,7 +15,7 @@
 	#include "edit.h"
 
 void	mousethread(void*);
-void	keyboardtap(void*);
+void	keyboardthread(void*);
 void	waitthread(void*);
 void	xfidallocthread(void*);
 void	newwindowthread(void*);
@@ -237,8 +237,8 @@ threadmain(int argc, char *argv[])
 	flushimage(display, 1);
 
 	acmeerrorinit();
-	threadcreate(keyboardtap, nil, STACK);
-	threadcreate(mousethread, nil, STACK);
+    threadcreate(keyboardthread, nil, STACK);	
+    threadcreate(mousethread, nil, STACK);
 	threadcreate(waitthread, nil, STACK);
 	threadcreate(xfidallocthread, nil, STACK);
 	threadcreate(newwindowthread, nil, STACK);
@@ -370,73 +370,78 @@ plumbproc(void *)
 }
 
 void
-keyboardtap(void*)
+keyboardthread(void *)
 {
-	Window *cur = nil;
-	Channel *c;
-	char *s, *t;
+	char *s;
+	Rune r;
+	Timer *timer;
+	Text *t;
+	char *bp;
+	
+	enum { KTimer, KKey, NKALT };
+	static Alt alts[NKALT+1];
 
-	enum { Akbd, Aopen, Aclose, Awrite, NALT };
-	Alt alts[NALT+1] = {
-		[Akbd]	{.c = kbdchan, .v = &s, .op = CHANRCV},
-		[Aopen] {.c = opentap, .v = &c, .op = CHANRCV},
-		[Aclose]{.c = closetap, .v = &c, .op = CHANRCV},
-		[Awrite]{.c = nil, .v = &s, .op = CHANNOP},
-		[NALT]	{.op = CHANEND},
-	};
+	alts[KTimer].c = nil;
+	alts[KTimer].v = nil;
+	alts[KTimer].op = CHANNOP;
+	alts[KKey].c = kbdchan;
+	alts[KKey].v = &s;
+	alts[KKey].op = CHANRCV;
+	alts[NKALT].op = CHANEND;
 
-	threadsetname("keyboardtap");
-
+	timer = nil;
+	typetext = nil;
+	threadsetname("keyboardthread");
+	
 	for(;;){
 		switch(alt(alts)){
-		case Akbd:
-			if(*s == 'k' || *s == 'K'){
-				shiftdown = utfrune(s+1, Kshift) != nil;
-				print("shift\n");
+		case KTimer:
+			timerstop(timer);
+			t = typetext;
+			if(t!=nil && t->what==Tag){
+				winlock(t->w, 'K');
+				wincommit(t->w, t);
+				winunlock(t->w);
+				flushimage(display, 1);
 			}
-			if(totap == nil)
-				goto Bypass;
-			if(input != nil && input != cur){	/* context change */
-				char *z = smprint("z%d", input->id);
-				if(nbsendp(totap, z) != 1){
-					free(z);
-					goto Bypass;
+			alts[KTimer].c = nil;
+			alts[KTimer].op = CHANNOP;
+			break;
+			
+		case KKey:
+			if(*s == 'k' || *s == 'K') {
+				shiftdown = utfrune(s+1, Kshift) != nil;
+				free(s);
+				break;
+			}
+			
+			if(*s == 'c') {
+				bp = s + 1;
+				
+				chartorune(&r, bp);
+				
+				typetext = rowtype(&row, r, mouse->xy);
+				t = typetext;
+				if(t!=nil && t->col!=nil && !(r==Kdown || r==Kleft || r==Kright))
+					activecol = t->col;
+				if(t!=nil && t->w!=nil)
+					t->w->body.file->curtext = &t->w->body;
+				
+				if(timer != nil)
+					timercancel(timer);
+				if(t!=nil && t->what==Tag) {
+					timer = timerstart(500);
+					alts[KTimer].c = timer->c;
+					alts[KTimer].op = CHANRCV;
+				} else {
+					timer = nil;
+					alts[KTimer].c = nil;
+					alts[KTimer].op = CHANNOP;
 				}
 			}
-			cur = input;
-			if(nbsendp(totap, s) != 1)
-				goto Bypass;
-			break;
-		case Aopen:
-			if(c == fromtap){
-				alts[Awrite].c = c;
-				alts[Awrite].op = CHANRCV;
-			}
-			break;
-		case Aclose:
-			if(c == fromtap){
-				fromtap = nil;
-				alts[Awrite].c = nil;
-				alts[Awrite].op = CHANNOP;
-			}
-			if(c == totap)
-				totap = nil;
-			while(nbrecv(c, &t))
-				free(t);
-			chanfree(c);
-			break;
-		case Awrite:
-			if(input != cur){
-				free(s);
-				break;
-			}
-		Bypass:
-			cur = input;
-			if(cur == nil){
-				free(s);
-				break;
-			}
-			sendp(cur->ck, s);
+			
+			free(s);
+			flushimage(display, 1);
 			break;
 		}
 	}
