@@ -701,6 +701,17 @@ texttype(Text *t, Rune r)
 	nr = 1;
 	rp = &r;
 	switch(r){
+	case 0x03:	/* ^C: copy selection to snarf buffer */
+		if(t->q0 != t->q1)
+			cut(t, t, nil, TRUE, FALSE, nil, 0);
+		return;
+	case 0x16:	/* ^V: paste from snarf buffer */
+		paste(t, t, nil, TRUE, TRUE, nil, 0);
+		return;
+	case 0x18:	/* ^X: cut selection to snarf buffer */
+		if(t->q0 != t->q1)
+			cut(t, t, nil, TRUE, TRUE, nil, 0);
+		return;
 	case Kleft:
 		typecommit(t);
 		if(t->q0 > 0)
