@@ -409,6 +409,7 @@ keyboardthread(void *)
 		case KKey:
 			if(*s == 'k' || *s == 'K') {
 				shiftdown = utfrune(s+1, Kshift) != nil;
+				ctldown = utfrune(s+1, Kctl) != nil;
 				free(s);
 				break;
 			}
@@ -468,9 +469,6 @@ kbdproc(void *arg)
 
 	if((kfd = open("/dev/kbd", OREAD)) >= 0){
 		close(fd);
-
-		/* only serve a kbd file per window when we got one */
-		servekbd = 1;
 
 		/* read kbd state */
 		while((n = read(kfd, buf, sizeof(buf)-1)) > 0){
@@ -667,9 +665,10 @@ mousethread(void *)
 				}else if(m.buttons & 2){
 					if(textselect2(t, &q0, &q1, &argt))
 						execute(t, q0, q1, FALSE, argt);
-				}else if(m.buttons & (4|(4<<Shift))){
-					if(textselect3(t, &q0, &q1))
-						look3(t, q0, q1, FALSE, (m.buttons&(4<<Shift))!=0);
+				}else if(m.buttons & 4){
+					if(textselect3(t, &q0, &q1)){
+						look3(t, q0, q1, FALSE, ctldown);
+					}
 				}
 				if(w)
 					winunlock(w);

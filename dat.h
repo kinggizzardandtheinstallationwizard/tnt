@@ -8,7 +8,6 @@ enum
 	Qeditout,
 	Qindex,
 	Qlabel,
-	Qkbd,
 	Qlog,
 	Qnew,
 
@@ -55,8 +54,6 @@ typedef	struct	Text Text;
 typedef	struct	Timer Timer;
 typedef	struct	Window Window;
 typedef	struct	Xfid Xfid;
-typedef struct	Kbdreadmesg Kbdreadmesg;
-
 
 struct Runestr
 {
@@ -282,8 +279,6 @@ struct Window
 	int		tagexpand;
 	int		taglines;
 	Rectangle	tagtop;
-	Channel		*ck;		/* chan(char*) */
-	uchar	kbdopen;
 };
 
 void	wininit(Window*, Window*, Rectangle);
@@ -562,9 +557,8 @@ int			editing;
 int			messagesize;		/* negotiated in 9P version setup */
 int			globalindent[NINDENT];
 Rune		*delcmd;			/* what command deleted the window. eg, Del, Delete, Delmesg */
-Window		*input;
-int			servekbd;
 int			shiftdown;
+int			ctldown;
 
 Channel	*cplumb;		/* chan(Plumbmsg*) */
 Channel	*cwait;		/* chan(Waitmsg) */
@@ -579,7 +573,5 @@ Channel	*cexit;		/* chan(int) */
 Channel	*cerr;		/* chan(char*) */
 Channel	*cedit;		/* chan(int) */
 Channel	*cwarn;		/* chan(void*)[1] (really chan(unit)[1]) */
-Channel	*kbdread;	/* chan(Consreadmesg) */
-
 
 #define	STACK	8192
