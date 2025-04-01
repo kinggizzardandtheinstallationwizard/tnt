@@ -712,6 +712,9 @@ texttype(Text *t, Rune r)
 		if(t->q0 != t->q1)
 			cut(t, t, nil, TRUE, TRUE, nil, 0);
 		return;
+	case Kesc:
+		textsetselect(t, 0, t->file->nc);
+		return;
 	case Kleft:
 		typecommit(t);
 		if(t->q0 > 0)
