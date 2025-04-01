@@ -190,8 +190,6 @@ threadmain(int argc, char *argv[])
 	kbdchan = initkbd();
 	if(kbdchan == nil)
 		error("can't find keyboard");
-	opentap = chancreate(sizeof(Channel*), 0);
-	closetap = chancreate(sizeof(Channel*), 0);
 	mainpid = getpid();
 	plumbeditfd = plumbopen("edit", OREAD|OCEXEC);
 	if(plumbeditfd >= 0){
@@ -417,7 +415,6 @@ keyboardthread(void *)
 			
 			if(*s == 'c') {
 				bp = s + 1;
-				
 				chartorune(&r, bp);
 				
 				typetext = rowtype(&row, r, mouse->xy);

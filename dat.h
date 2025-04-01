@@ -9,7 +9,6 @@ enum
 	Qindex,
 	Qlabel,
 	Qkbd,
-	Qtap,
 	Qlog,
 	Qnew,
 
@@ -581,10 +580,6 @@ Channel	*cerr;		/* chan(char*) */
 Channel	*cedit;		/* chan(int) */
 Channel	*cwarn;		/* chan(void*)[1] (really chan(unit)[1]) */
 Channel	*kbdread;	/* chan(Consreadmesg) */
-Channel *opentap;	/* open fromtap or totap */
-Channel *closetap;	/* close fromtap or totap */
-Channel	*fromtap;	/* keyboard output from the tap program */
-Channel *totap;		/* our keyboard input to tap program */
 
 
 #define	STACK	8192
