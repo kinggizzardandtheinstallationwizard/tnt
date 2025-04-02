@@ -715,7 +715,7 @@ texttype(Text *t, Rune r)
 	case Kesc:
 		textsetselect(t, 0, t->file->nc);
 		return;
-	case Kdel:    /* handle delete key */
+	case Kdel:
 		typecommit(t);
 		if(t->q1 < t->file->nc){
 			if(t->q0 != t->q1){
