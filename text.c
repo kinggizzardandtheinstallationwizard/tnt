@@ -715,6 +715,16 @@ texttype(Text *t, Rune r)
 	case Kesc:
 		textsetselect(t, 0, t->file->nc);
 		return;
+	case Kdel:    /* handle delete key */
+		typecommit(t);
+		if(t->q1 < t->file->nc){
+			if(t->q0 != t->q1){
+				cut(t, t, nil, TRUE, TRUE, nil, 0);
+			} else {
+				textdelete(t, t->q0, t->q0+1, TRUE);
+			}
+		}
+		return;
 	case Kleft:
 		typecommit(t);
 		if(t->q0 > 0)
