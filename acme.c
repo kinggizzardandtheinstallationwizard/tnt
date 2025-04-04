@@ -410,6 +410,7 @@ keyboardthread(void *)
 			if(*s == 'k' || *s == 'K') {
 				shiftdown = utfrune(s+1, Kshift) != nil;
 				ctldown = utfrune(s+1, Kctl) != nil;
+				altdown = utfrune(s+1, Kalt) != nil;
 				free(s);
 				break;
 			}

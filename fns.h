@@ -5,6 +5,7 @@ void	warning(Mntdir*, char*, ...);
 #define	fbufalloc()	emalloc(BUFSIZE)
 #define	fbuffree(x)	free(x)
 
+void	putall(Text*, Text*, Text*, int, int, Rune*, int);
 void	plumblook(Plumbmsg*m);
 void	plumbshow(Plumbmsg*m);
 void	putsnarf(void);

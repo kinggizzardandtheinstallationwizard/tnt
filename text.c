@@ -705,6 +705,20 @@ texttype(Text *t, Rune r)
 		if(t->q0 != t->q1)
 			cut(t, t, nil, TRUE, FALSE, nil, 0);
 		return;
+	case 0x13: /* ^S: Save file */
+    	typecommit(t);
+    	if(t->what == Body && t->w) {
+        	put(t, nil, nil, XXX, XXX, nil, 0);
+    	}
+    	return;
+    case 'S': /* Ctl-Shift-s to save all. 
+    		   * there's probably a better way to do this */
+    	if(ctldown){
+    		typecommit(t);
+    		putall(nil, nil, nil, 0, 0, nil, 0);
+    		return;
+    	}
+    	break; /* just insert S */
 	case 0x16:	/* ^V: paste from snarf buffer */
 		paste(t, t, nil, TRUE, TRUE, nil, 0);
 		return;

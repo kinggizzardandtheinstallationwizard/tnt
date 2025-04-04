@@ -559,6 +559,7 @@ int			globalindent[NINDENT];
 Rune		*delcmd;			/* what command deleted the window. eg, Del, Delete, Delmesg */
 int			shiftdown;
 int			ctldown;
+int			altdown;
 
 Channel	*cplumb;		/* chan(Plumbmsg*) */
 Channel	*cwait;		/* chan(Waitmsg) */
