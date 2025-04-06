@@ -367,6 +367,27 @@ plumbproc(void *)
 	}
 }
 
+/* some hotkeys are better handled outside texttype
+ * eg, don't apply to a particular window, or 
+ * interfere with control flow (ie del). */
+int
+globalmod(Rune r)
+{
+	switch(r){
+	case 0x04:
+		if(activewin)
+			del(&activewin->body, nil, nil, 0, 0, nil, 0);
+		return TRUE;
+	case '\n':
+		if(altdown){
+			run(nil, "win", nil, 0, TRUE, nil, 0, FALSE);
+		}
+		return TRUE;
+	}
+	
+	return FALSE;
+}
+
 void
 keyboardthread(void *)
 {
@@ -419,7 +440,10 @@ keyboardthread(void *)
 				bp = s + 1;
 				chartorune(&r, bp);
 				
-				typetext = rowtype(&row, r, mouse->xy);
+				if(globalmod(r))
+					typetext = nil;
+				else
+					typetext = rowtype(&row, r, mouse->xy);
 				t = typetext;
 				if(t!=nil && t->col!=nil && !(r==Kdown || r==Kleft || r==Kright))
 					activecol = t->col;
