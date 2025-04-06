@@ -922,7 +922,12 @@ texttype(Text *t, Rune r)
 		}
 		break;
 	case '\n':
-		if(t->what == Body && t->w->indent[AUTOINDENT]){
+		if(altdown){
+			/* TODO: Make this work even with no window selected */
+			Runestr dir = dirname(t, nil, 0);
+			run(nil, "win", dir.r, dir.nr, TRUE, nil, 0, FALSE);
+		}
+		else if(t->what == Body && t->w->indent[AUTOINDENT]){
 			/* find beginning of previous line using backspace code */
 			nnb = textbswidth(t, 0x15); /* ^U case */
 			rp = runemalloc(nnb + 1);
