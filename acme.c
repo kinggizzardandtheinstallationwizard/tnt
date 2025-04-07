@@ -380,8 +380,10 @@ globalmod(Rune r)
 		return TRUE;
 	case '\n':
 		if(altdown){
-			run(nil, "win", nil, 0, TRUE, nil, 0, FALSE);
-		}
+			char *name = estrdup("win");
+			run(nil, name, nil, 0, TRUE, nil, 0, FALSE);
+		} else 
+			return FALSE;
 		return TRUE;
 	}
 	
@@ -813,8 +815,9 @@ waitthread(void *)
 			if(c){
 				if(c->iseditcmd)
 					sendul(cedit, 0);
-				free(c->text);
 				free(c->name);
+				c->name = nil;
+				free(c->text);
 				fsysdelid(c->md);
 				free(c);
 			}
