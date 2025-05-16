@@ -271,6 +271,12 @@ textload(Text *t, uint q0, char *file, int setqid)
 			}
 			free(dbuf);
 		}
+		dl = emalloc(sizeof(Dirlist));
+		dl->r = bytetorune("../", &dl->nr);
+		dl->wid = stringwidth(t->font, "../");
+		ndl++;
+		dlp = realloc(dlp, ndl*sizeof(Dirlist*));
+		dlp[ndl-1] = dl;
 		qsort(dlp, ndl, sizeof(Dirlist*), dircmp);
 		t->w->dlp = dlp;
 		t->w->ndl = ndl;
