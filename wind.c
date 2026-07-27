@@ -507,7 +507,7 @@ winsettag1(Window *w)
 			//runemove(new+i, L" Look ", 6);
 			//i += 6;
 
-			runemove(new+i, L" Lines Evil | Look ", 19);
+			runemove(new+i, L" Line Evil | Look ", 19);
 			i += 19;
 		}
 	}
