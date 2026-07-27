@@ -46,6 +46,8 @@ void	readfile(Column*, char*);
 int	shutdown(void*, char*);
 Channel* initkbd(void);
 
+evilflag = TRUE;
+
 void
 derror(Display*, char *errorstr)
 {
@@ -65,10 +67,6 @@ threadmain(int argc, char *argv[])
 	rfork(RFENVG|RFNAMEG);
 
 	ncol = -1;
-
-	// invert my favorite flags
-	evilflag = TRUE;
-	lineflag = TRUE;
 
 	loadfile = nil;
 	ARGBEGIN{
@@ -108,7 +106,7 @@ threadmain(int argc, char *argv[])
 			goto Usage;
 		break;
 	case 'n':
-	   lineflag = FALSE;
+	   lineflag = TRUE;
 	   break;
 	default:
 	Usage:
