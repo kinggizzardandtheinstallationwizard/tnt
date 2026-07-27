@@ -475,8 +475,8 @@ winsettag1(Window *w)
 	i = 0;
 	runemove(new+i, w->body.file->name, w->body.file->nname);
 	i += w->body.file->nname;
-	runemove(new+i, L" Del Snarf", 10);
-	i += 10;
+	runemove(new+i, L" Del Snarf Paste", 16);
+	i += 16;
 	if(w->filemenu){
 		if(w->body.file->delta.nc>0 || w->body.ncache){
 			runemove(new+i, L" Undo", 5);
