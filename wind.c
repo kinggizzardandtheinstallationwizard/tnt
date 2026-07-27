@@ -504,8 +504,11 @@ winsettag1(Window *w)
 	else{
 		k = w->tag.file->nc;
 		if(w->body.file->seq == 0){
-			runemove(new+i, L" Look ", 6);
-			i += 6;
+			//runemove(new+i, L" Look ", 6);
+			//i += 6;
+
+			runemove(new+i, L" Lines Evil | Look ", 19);
+			i += 19;
 		}
 	}
 
