@@ -1,10 +1,10 @@
 </$objtype/mkfile
-BIN=/$objtype/bin
+BIN=$home/bin/$objtype
 
-TARG=acme
+TARG=tnt
 
 OFILES=\
-	acme.$O\
+	tnt.$O\
 	addr.$O\
 	buff.$O\
 	cols.$O\
@@ -37,5 +37,5 @@ $O.out:	/$objtype/lib/libframe.a /$objtype/lib/libdraw.a /$objtype/lib/libthread
 edit.$O ecmd.$O elog.$O:	edit.h
 
 syms:V:
-	$CC -a acme.c > syms
+	$CC -a tnt.c > syms
 	for(i in ????.c) $CC -aa $i >> syms
