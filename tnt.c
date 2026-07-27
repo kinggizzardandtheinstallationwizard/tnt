@@ -66,6 +66,10 @@ threadmain(int argc, char *argv[])
 
 	ncol = -1;
 
+	// invert my favorite flags
+	evilflag = TRUE;
+	lineflag = TRUE;
+
 	loadfile = nil;
 	ARGBEGIN{
 	case 'a':
@@ -83,7 +87,7 @@ threadmain(int argc, char *argv[])
 			goto Usage;
 		break;
 	case 'e':
-        evilflag = TRUE;
+        evilflag = FALSE;
         break;
 	case 'f':
 		fontnames[0] = ARGF();
@@ -104,7 +108,7 @@ threadmain(int argc, char *argv[])
 			goto Usage;
 		break;
 	case 'n':
-	   lineflag = TRUE;
+	   lineflag = FALSE;
 	   break;
 	default:
 	Usage:
@@ -999,17 +1003,19 @@ iconinit(void)
 	Rectangle r;
 	Image *tmp;
 
-	/* Blue */
-	tagcols[BACK] = allocimagemix(display, DPalebluegreen, DWhite);
-	tagcols[HIGH] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, DPalegreygreen);
-	tagcols[BORD] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, DPurpleblue);
+	/* Using custom colors intead of DPaleyellow etc */
+
+	// Control Bar
+	tagcols[BACK] = allocimagemix(display, 0xe0a877FF, DWhite); // creamy orange
+	tagcols[HIGH] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0xB87070FF);
+	tagcols[BORD] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0xD0C0B0FF); // beige
 	tagcols[TEXT] = display->black;
 	tagcols[HTEXT] = display->black;
 
-	/* Yellow */
-	textcols[BACK] = allocimagemix(display, DPaleyellow, DWhite);
-	textcols[HIGH] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, DDarkyellow);
-	textcols[BORD] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, DYellowgreen);
+	// Buffers
+	textcols[BACK] = allocimagemix(display, 0xFFF5eaFF, DWhite); // warm off-white
+	textcols[HIGH] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0xB87070FF); // bricks
+	textcols[BORD] = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x8B0000FF); // brown bricks
 	textcols[TEXT] = display->black;
 	textcols[HTEXT] = display->black;
 
@@ -1029,12 +1035,12 @@ iconinit(void)
 	draw(modbutton, r, tagcols[BACK], nil, r.min);
 	border(modbutton, r, 2, tagcols[BORD], ZP);
 	r = insetrect(r, 2);
-	tmp = allocimage(display, Rect(0,0,1,1), screen->chan, 1, DMedblue);
+	tmp = allocimage(display, Rect(0,0,1,1), screen->chan, 1, 0x8B0000FF);
 	draw(modbutton, r, tmp, nil, ZP);
 	freeimage(tmp);
 
 	r = button->r;
-	colbutton = allocimage(display, r, screen->chan, 0, DPurpleblue);
+	colbutton = allocimage(display, r, screen->chan, 0, 0xB87070FF);
 
 	but2col = allocimage(display, r, screen->chan, 1, 0xAA0000FF);
 	but3col = allocimage(display, r, screen->chan, 1, 0x006600FF);
