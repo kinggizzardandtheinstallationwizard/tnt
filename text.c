@@ -747,17 +747,17 @@ texttype(Text *t, Rune r)
 			}
 		}
 		return;
-	case Kleft:
+	case Kleft: case 0x02: // ^B
 		typecommit(t);
 		if(t->q0 > 0)
 			textshow(t, t->q0-1, t->q0-1, TRUE);
 		return;
-	case Kright:
+	case Kright: case 0x06: // ^F
 		typecommit(t);
 		if(t->q1 < t->file->nc)
 			textshow(t, t->q1+1, t->q1+1, TRUE);
 		return;
-	case Kdown:
+	case Kdown: case 0x0E: // ^N
         if(t->w->evil){
             typecommit(t);
             q0 = t->q0;
@@ -792,7 +792,7 @@ texttype(Text *t, Rune r)
 		if(t->what == Body)
 			textsetorigin(t, q0, TRUE);
 		return;
-	case Kup:
+	case Kup: case 0x10: // ^P
         if(t->w->evil){
             typecommit(t);
             q0 = t->q0;
