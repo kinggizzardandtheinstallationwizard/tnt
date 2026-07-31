@@ -6,7 +6,7 @@ this is my personal fork of someone else's personal fork of acme, featuring warm
 
 some key combinations were added already:
 - `^S`, `Put`
-- `^X', `Cut`
+- `^X`, `Cut`
 - `^C`, `Snarf`
 - `^V`, `Paste`
 
