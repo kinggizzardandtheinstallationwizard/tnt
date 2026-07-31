@@ -14,3 +14,13 @@ the original fork added the option for full use of the arrow keys for navigation
 i set `^B`, `^F`, `^P`, `^N` as alternative controls for left, right, up, and down.
 
 ![](sc.png)
+
+## installation instructions
+
+### plan 9
+
+idk
+
+### linux
+
+no
